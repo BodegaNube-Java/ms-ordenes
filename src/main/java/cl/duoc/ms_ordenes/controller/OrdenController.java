@@ -1,10 +1,8 @@
 package cl.duoc.ms_ordenes.controller;
 
-import cl.duoc.ms_ordenes.dto.OrdenCreateRequestDto;
-import cl.duoc.ms_ordenes.dto.OrdenResponseDto;
+import cl.duoc.ms_ordenes.model.Orden;
 import cl.duoc.ms_ordenes.service.OrdenService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,22 +11,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/ordenes")
-@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class OrdenController {
 
-    private final OrdenService ordenService;
+    @Autowired
+    private OrdenService ordenService;
 
-    // Recibe peticiones desde API Gateway / Lambda
+    // Endpoint para recibir la orden e intentar reservar stock en ms-inventario
     @PostMapping
-    public ResponseEntity<OrdenResponseDto> crearOrden(@Valid @RequestBody OrdenCreateRequestDto request) {
-        OrdenResponseDto respuesta = ordenService.crearOrden(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+    public ResponseEntity<Orden> crearOrden(@RequestBody Orden orden) {
+        Orden nuevaOrden = ordenService.crearOrden(orden);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevaOrden);
     }
 
-    // Endpoint expuesto para el servicio de picking
-    @GetMapping("/picking-disponibles")
-    public ResponseEntity<List<OrdenResponseDto>> obtenerOrdenesParaPicking() {
-        List<OrdenResponseDto> ordenes = ordenService.obtenerOrdenesDisponiblesParaPicking();
+    // Endpoint que consultará el microservicio de Picking y Despacho
+    @GetMapping("/disponibles")
+    public ResponseEntity<List<Orden>> obtenerOrdenesDisponibles() {
+        List<Orden> ordenes = ordenService.obtenerOrdenesDisponibles();
         return ResponseEntity.ok(ordenes);
     }
 }
