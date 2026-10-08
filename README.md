@@ -1,9 +1,3 @@
-##  Variables de Entorno
-
-```env
-DB_URL=jdbc:postgresql://localhost:5432/ordenes_db
-DB_USER=postgres
-DB_PASSWORD=postgres
 
 Microservicio de órdenes 
 
@@ -45,3 +39,11 @@ dto :Para definir los objetos de transferencia de datos (Data Transfer Objects)
 ##  Despliegue con Docker
 
 El proyecto incluye un archivo `docker-compose.yml` para levantar rápidamente la instancia de PostgreSQL local
+
+##  Variables de Entorno
+
+```env
+DB_URL=jdbc:postgresql://localhost:5432/ordenes_db
+DB_USER=postgres
+DB_PASSWORD=postgres
+
