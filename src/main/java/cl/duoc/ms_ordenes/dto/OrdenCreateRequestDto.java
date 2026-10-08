@@ -8,7 +8,7 @@ import java.util.List;
 
 public record OrdenCreateRequestDto(
     @NotBlank(message = "El ID de la orden externa es obligatorio")
-    String externalOrderId,
+    String codigoPedido,
 
     @NotBlank(message = "El ID del comercio es obligatorio")
     String comercioId,

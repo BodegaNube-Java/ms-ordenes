@@ -7,10 +7,10 @@ import java.util.List;
 
 public record OrdenResponseDto(
     String id,
-    String externalOrderId,
+    String codigoPedido,
     String comercioId,
     String estado,
-    String trackingNumber,
+    String numeroSeguimiento,
     List<ItemOrdenDto> items,
     LocalDateTime createdAt
 ) {
@@ -26,10 +26,10 @@ public record OrdenResponseDto(
 
         return new OrdenResponseDto(
                 String.valueOf(orden.getId()),
-                orden.getExternalOrderId(),
+                orden.getCodigoPedido(),
                 orden.getComercioId(),
                 orden.getEstado(),
-                orden.getTrackingNumber(),
+                orden.getNumeroSeguimiento(),
                 itemsDto,
                 orden.getCreatedAt()
         );

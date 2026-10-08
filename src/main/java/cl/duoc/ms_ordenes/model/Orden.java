@@ -6,11 +6,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 @Table(
     name = "ordenes",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_external_comercio", columnNames = {"external_order_id", "comercio_id"})
+        @UniqueConstraint(name = "uk_codigo_pedido", columnNames = {"codigo_pedido", "comercio_id"})
     }
 )
 @Data
@@ -23,8 +25,8 @@ public class Orden {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(name = "external_order_id", nullable = false)
-    private String externalOrderId;
+    @Column(name = "codigo_pedido", nullable = false)
+    private String codigoPedido;
 
     @Column(name = "comercio_id", nullable = false)
     private String comercioId;
@@ -32,14 +34,15 @@ public class Orden {
     @Column(nullable = false)
     private String estado; // PENDIENTE_STOCK, LISTA_PARA_PICKING
 
-    @Column(name = "tracking_number")
-    private String trackingNumber;
+    @Column(name = "numero_seguimiento")
+    private String numeroSeguimiento;
 
     @Version
     private Long version; // Control de concurrencia optimista
 
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
+    @JsonManagedReference
     private List<ItemOrden> items = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)

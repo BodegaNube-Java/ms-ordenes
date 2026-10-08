@@ -1,5 +1,8 @@
 package cl.duoc.ms_ordenes.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,6 +12,8 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+
+
 public class ItemOrden {
 
     @Id
@@ -23,5 +28,6 @@ public class ItemOrden {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orden_id")
+    @JsonBackReference
     private Orden orden;
 }
