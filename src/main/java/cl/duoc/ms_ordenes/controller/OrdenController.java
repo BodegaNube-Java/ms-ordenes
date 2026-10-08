@@ -16,15 +16,14 @@ public class OrdenController {
 
     @Autowired
     private OrdenService ordenService;
-
-    // Endpoint para recibir la orden e intentar reservar stock en ms-inventario
+// Endpoint para recibir la orden e intentar reservar stock en ms-inventario
     @PostMapping
     public ResponseEntity<Orden> crearOrden(@RequestBody Orden orden) {
         Orden nuevaOrden = ordenService.crearOrden(orden);
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevaOrden);
     }
 
-    // Endpoint que consultará el microservicio de Picking y Despacho
+// Endpoint que consultará el microservicio de Picking y Despacho
     @GetMapping("/disponibles")
     public ResponseEntity<List<Orden>> obtenerOrdenesDisponibles() {
         List<Orden> ordenes = ordenService.obtenerOrdenesDisponibles();

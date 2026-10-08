@@ -1,63 +1,47 @@
-# ms-ordenes
-
-Microservicio de órdenes de BodegaNube.
-
-## Tecnologías
-
-- Java 21
-- Spring Boot
-- Spring Data JPA
-- PostgreSQL
-
-## Responsabilidad
-
-- Crear la orden a partir del aviso de venta procesado por la Lambda (`lambda-bodeganube-webhook`), **una vez que el stock ya fue reservado** por `ms-inventario`, evitando duplicados.
-- Permitir que el comercio consulte únicamente sus propias órdenes y su estado (vía API Gateway, síncrono).
-- Dejar disponible la orden para `ms-picking-service`.
-
-> Nota de diseño: `ms-ordenes` no llama a `ms-inventario`. La reserva de stock la orquesta la Lambda **antes** de pedir la creación de la orden — así se evita el acoplamiento síncrono ambiguo entre ambos microservicios.
-
-## Endpoints
-
-```http
-GET  /ordenes
-GET  /ordenes/{id}
-POST /ordenes            (uso interno, invocado por la Lambda)
-```
-
-## Reglas de negocio
-
-- Un mismo aviso de venta (idempotency key del canal externo) no puede generar dos órdenes.
-- Solo se crea la orden si la Lambda confirma que el stock fue reservado.
-- El comercio solo puede ver las órdenes asociadas a su propio identificador de comercio.
-
-## Roles
-
-```text
-COMERCIO   (consulta sus propias órdenes)
-OPERARIO   (consulta a través de ms-picking-service)
-```
-
-## Base de datos
-
-PostgreSQL (`ms_ordenes`).
-
-## Variables de entorno
+##  Variables de Entorno
 
 ```env
-DB_URL=
-DB_USERNAME=
-DB_PASSWORD=
-```
+DB_URL=jdbc:postgresql://localhost:5432/ordenes_db
+DB_USER=postgres
+DB_PASSWORD=postgres
 
-## Ejecución local
+Microservicio de órdenes 
 
-```bash
-./mvnw spring-boot:run
-```
+## Descripción
 
-## Build
+`ms-ordenes` es el servicio encargado de la orquestación, creación y seguimiento del ciclo de vida de los pedidos. Coordina de forma síncrona la reserva de stock consumiendo `ms-inventario` (`POST /inventario/reservar`) y gestiona las reglas de negocio y estados de las órdenes según la disponibilidad del catálogo.
 
-```bash
-./mvnw clean package
-```
+---
+
+##  Tecnologías Utilizadas
+
+- **Java 21**
+- **Spring Boot 3.x**
+- **Spring Data JPA** (Persistencia y Mapeo ORM)
+- **Spring WebFlux / WebClient** (Cliente HTTP para integración síncrona)
+- **PostgreSQL** (Base de datos relacional)
+- **Maven** (Gestión de dependencias y construcción del artefacto)
+
+---
+
+##  Arquitectura en Capas (CSR)
+
+El proyecto implementa la arquitectura **Controller - Service - Repository ,model(CSR)**:
+
+Nuestra arquitectura se basa en el patrón en capas CSR junto con componentes transversales de soporte:
+
+Controller (@RestController): Maneja la capa de entrada REST (/ordenes), valida las peticiones y retorna las respuestas HTTP correspondientes.
+
+Service (@Service): Contiene la lógica de negocio y orquesta la comunicación síncrona enviando las peticiones a ms-inventario.
+
+Repository (@Repository): Gestiona la persistencia de datos en PostgreSQL utilizando Spring Data JPA.
+
+Model (@Entity): Define las entidades de dominio y mapea las tablas en la base de datos con sus anotaciones JPA.
+
+Config & Exception (Controlador Global): Implementamos un @RestControllerAdvice para capturar de forma centralizada las excepciones de negocio (como el error 409 Conflict cuando no hay stock) y transformar la respuesta limpiamente sin romper el flujo del sistema."
+
+dto :Para definir los objetos de transferencia de datos (Data Transfer Objects)
+
+##  Despliegue con Docker
+
+El proyecto incluye un archivo `docker-compose.yml` para levantar rápidamente la instancia de PostgreSQL local
