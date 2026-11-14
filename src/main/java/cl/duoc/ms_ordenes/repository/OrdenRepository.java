@@ -10,8 +10,12 @@ import java.util.Optional;
 @Repository
 public interface OrdenRepository extends JpaRepository<Orden, String> {
 
-    Optional<Orden> codigoPedidoAndComercioId(String codigoPedido, String comercioId);
+    Optional<Orden> findByCodigoPedidoAndComercioId(String codigoPedido, String comercioId);
 
 //  genera el SQL para obtener las órdenes por estado 
     List<Orden> findByEstado(String estado);
 }
+
+
+
+

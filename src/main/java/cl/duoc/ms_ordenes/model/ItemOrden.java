@@ -1,7 +1,6 @@
 package cl.duoc.ms_ordenes.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,3 +30,10 @@ public class ItemOrden {
     @JsonBackReference
     private Orden orden;
 }
+
+
+
+
+
+
+

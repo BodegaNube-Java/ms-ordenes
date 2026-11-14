@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-
+import java.util.Optional;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +20,19 @@ public class OrdenService {
     private WebClient inventarioWebClient;
 
     public Orden crearOrden(Orden orden) {
+
+// 1. Control de Idempotencia: Verificar si el pedido ya existe para este comercio
+    Optional<Orden> ordenExistente = ordenRepository.findByCodigoPedidoAndComercioId(
+        orden.getCodigoPedido(), 
+        orden.getComercioId()
+    );
+
+    // Si el webhook reenvió el aviso, devolvemos la orden ya procesada sin duplicar
+    if (ordenExistente.isPresent()) {
+        return ordenExistente.get();
+    }
+
+
  // Guarda con estado inicial PENDIENTE_STOCK
         orden.setEstado("PENDIENTE_STOCK");
         Orden ordenGuardada = ordenRepository.save(orden);
