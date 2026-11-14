@@ -1,120 +1,63 @@
 name: Pipeline CI/CD Completo - Microservicio Java 21
 
-
-
 on:
-
- push:
-
-  branches: [ main ]
-
-
+  push:
+    branches: [ main ]
 
 jobs:
+  ci-build-and-test:
+    name: 1. Integracion Continua (Build, Test & Artifact)
+    runs-on: ubuntu-latest
 
- ci-build-and-test:
+    steps:
+      - name: Descargar codigo del repositorio
+        uses: actions/checkout@v4
 
-  name: 1. Integracion Continua (Build, Test & Artifact)
-
-  runs-on: ubuntu-latest
-
-
-
-  steps:
-
-   - name: Descargar codigo del repositorio
-
-    uses: actions/checkout@v4
-
-
-
-   - name: Configurar Java 21 (Amazon Corretto)
-
-    uses: actions/setup-java@v5
-
-    with:
-
-     distribution: 'corretto'
-
-     java-version: '21'
-
-     cache: 'maven'
-
-
-
-   - name: Ejecutar pruebas unitarias (JUnit)
-
-    run: mvn test
-
-
-
-   - name: Empaquetar aplicacion (.jar)
-
-    run: mvn package -DskipTests
-
-
-
-   - name: Guardar artefacto compilado en GitHub
-
-    uses: actions/upload-artifact@v4
-
-    with:
-
-     name: microservicio-jar
-
-     path: target/*.jar
-
-CAMILO ANDRES QUEUPIL FIGUEROA
-12:36 p. m.
-shift + alt + f, ocupan el prettier para formatear
-
-JAVIER ALEJANDRO CASTILLO ONATT
-JAVIER ALEJANDRO CASTILLO ONATT
-JAVIER ALEJANDRO CASTILLO ONATT
-12:39 p. m.
-
-Profe la semana pasada habia indicado en un archivo algo distinto, terminaba asi:
-
-
-
-  - name: Compilar y empaquetar proyecto Java con Maven
-
-        run: mvn clean package -DskipTests
-
-
-
-      - name: Configurar Node.js (necesario para Serverless CLI)
-
-        uses: actions/setup-node@v4
-
+      - name: Configurar Java 21 (Amazon Corretto)
+        uses: actions/setup-java@v5
         with:
+          distribution: 'corretto'
+          java-version: '21'
+          cache: 'maven'
 
-          node-version: '20.x'
+      - name: Ejecutar pruebas unitarias (JUnit)
+        run: mvn test
 
+      - name: Empaquetar aplicacion (.jar)
+        run: mvn package -DskipTests
 
-
-      - name: Instalar Serverless Framework globalmente
-
-        run: npm install -g serverless@3.38.0
-
-
-
-      - name: Configurar credenciales temporales de AWS
-
-        uses: aws-actions/configure-aws-credentials@v4
-
+      - name: Guardar artefacto compilado en GitHub
+        uses: actions/upload-artifact@v4
         with:
+          name: microservicio-jar
+          path: target/*.jar
 
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+ #  -------------------------------------------------------------------------
+ #  OPCIONAL: Descomenta este bloque cuando tengas AWS Academy encendido
+ #  y los 3 Secrets (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)
+ #  -------------------------------------------------------------------------
+  cd-deploy-aws:
+     name: 2. Despliegue Continuo a AWS
+     needs: ci-build-and-test  # Solo se ejecuta si el paso 1 sale en verde
+     runs-on: ubuntu-latest
 
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+     steps:
+       - name: Descargar codigo del repositorio
+         uses: actions/checkout@v4
 
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+       - name: Descargar artefacto .jar generado en el paso anterior
+         uses: actions/download-artifact@v4
+         with:
+           name: microservicio-jar
+           path: target/
 
-          aws-region: us-east-1
+       - name: Configurar credenciales temporales de AWS Academy
+         uses: aws-actions/configure-aws-credentials@v4
+         with:
+           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+           aws-region: us-east-1
 
-
-
-      - name: Desplegar arquitectura Serverless a AWS Cloud
-
-        run: serverless deploy --stage dev
+       - name: Desplegar a AWS Cloud (Serverless)
+         run: npx serverless@3.38.0 deploy --stage dev
